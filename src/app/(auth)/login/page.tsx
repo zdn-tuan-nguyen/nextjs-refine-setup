@@ -1,18 +1,23 @@
-import authOptions from "@app/api/auth/[...nextauth]/options";
+import authOptions from "@/app/api/auth/[...nextauth]/options";
+import { AuthPage } from "@refinedev/antd";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import React from "react";
 
-export default async function LoginLayout({
-  children,
-}: React.PropsWithChildren) {
+export default async function Login() {
   const data = await getData();
 
   if (data.session?.user) {
     return redirect("/");
   }
 
-  return <>{children}</>;
+  return (
+    <AuthPage
+      type="login"
+      registerLink={false}
+      forgotPasswordLink={false}
+      rememberMe={false}
+    />
+  );
 }
 
 async function getData() {

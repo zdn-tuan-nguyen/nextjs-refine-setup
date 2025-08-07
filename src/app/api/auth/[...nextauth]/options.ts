@@ -1,78 +1,163 @@
-import GoogleProvider from "next-auth/providers/google";
-import Auth0Provider from "next-auth/providers/auth0";
-import KeycloakProvider from "next-auth/providers/keycloak";
+import { env } from "@/config/env";
+import type { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { Awaitable, User } from "next-auth";
 
-const authOptions = {
-  // Configure one or more authentication providers
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterCredentials extends LoginCredentials {
+  name: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+interface UserResponse {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;
+}
+
+const authOptions: NextAuthOptions = {
   providers: [
-    // !!! Should be stored in .env file.
-    GoogleProvider({
-      clientId:
-        "1041339102270-e1fpe2b6v6u1didfndh7jkjmpcashs4f.apps.googleusercontent.com",
-      clientSecret: "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",
-    }),
-    Auth0Provider({
-      clientId: "AcinJvjWp1Dr41gPcJeQ20r5vcsteks4",
-      clientSecret:
-        "y3pj2KaTiNgING-5e8_JYmX_bIQSwvkp_XgDcA75sEPSSB2zmi0n-3UoTfH0pOTP",
-      issuer: "https://dev-y38p834gjptooc4g.us.auth0.com",
-    }),
-    KeycloakProvider({
-      clientId: "refine-demo",
-      clientSecret: "refine",
-      issuer: "https://lemur-0.cloud-iam.com/auth/realms/refine",
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name ?? profile.preferred_username,
-          email: profile.email,
-          image: "https://faces-img.xcdn.link/thumb-lorem-face-6312_thumb.jpg",
-        };
-      },
-    }),
     CredentialsProvider({
-      id: "CredentialsSignIn",
-      credentials: {},
-      async authorize(credentials: any) {
-        // TODO: Request your API to check credentials
-        console.log("CredentialsSignIn", JSON.stringify(credentials, null, 2));
-
-        // check credentials
-        // if not valid return null
-        if (credentials?.["email"] !== "demo@refine.dev") {
+      id: "credential-login",
+      name: "Sign In",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials): Promise<User | null> {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const user: Awaitable<User> = {
-          id: "1",
-          name: "John Doe",
-          email: "demo@refine.dev",
-          image: "https://i.pravatar.cc/300",
-        };
-        return user;
+        try {
+          console.log("Signing in with credentials:", credentials);
+          const response = await fetch(`${env.API_BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
+          // console.log("🚀 ~ authorize ~ response:", response);
+
+          if (!response.ok) {
+            return null;
+          }
+
+          const result: ApiResponse<UserResponse> = await response.json();
+          console.log("🚀 ~ authorize ~ result:", result);
+
+          // if (!result.success || !result.data) {
+          //   return null;
+          // }
+
+          if (!result.data?.user) {
+            return null;
+          }
+          const user: User = {
+            id: result.data.user.id,
+            name: result.data.user.name,
+            email: result.data.user.email,
+            image: "https://www.svgrepo.com/show/509008/avatar-thinking-2.svg",
+          };
+
+          return user;
+        } catch (error) {
+          console.error("Sign in error:", error);
+          return null;
+        }
       },
     }),
     CredentialsProvider({
       id: "CredentialsSignUp",
-      credentials: {},
-      async authorize(credentials: any) {
-        // TODO: Request your API to create new user
-        console.log("CredentialsSignUp", JSON.stringify(credentials, null, 2));
+      name: "Sign Up",
+      credentials: {
+        name: { label: "Name", type: "text" },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials): Promise<User | null> {
+        if (
+          !credentials?.name ||
+          !credentials?.email ||
+          !credentials?.password
+        ) {
+          return null;
+        }
 
-        // return mocked user
-        const user: Awaitable<User> = {
-          id: "1",
-          name: "John Doe",
-          email: "demo@refine.dev",
-          image: "https://i.pravatar.cc/300",
-        };
-        return user;
+        try {
+          console.log("Registering user with credentials:", credentials);
+          const response = await fetch(`${env.API_BASE_URL}/auth/register`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: credentials.name,
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
+
+          if (!response.ok) {
+            return null;
+          }
+
+          const result: ApiResponse<UserResponse> = await response.json();
+
+          if (!result.success || !result.data) {
+            return null;
+          }
+
+          const user: User = {
+            id: result.data.id,
+            name: result.data.name,
+            email: result.data.email,
+            image: result.data.image,
+          };
+
+          return user;
+        } catch (error) {
+          console.error("Sign up error:", error);
+          return null;
+        }
       },
     }),
   ],
-  secret: "UItTuD1HcGXIj8ZfHUswhYdNd40Lc325R8VlxQPUoR0=",
+  session: {
+    strategy: "jwt",
+  },
+  secret: env.API_BASE_URL,
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+    error: "/auth/error",
+  },
 };
 
 export default authOptions;

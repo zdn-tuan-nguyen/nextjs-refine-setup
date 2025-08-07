@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build": "refine build && rimraf .next/cache",
-    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
-    "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "start": "refine start"
+    "dev": "refine dev",
+    "start": "refine start",
+    "lint": "eslint '**/*.{js,jsx,ts,tsx}'"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
@@ -14,8 +14,6 @@
     "@refinedev/antd": "^5.46.2",
     "@refinedev/cli": "^2.16.46",
     "@refinedev/core": "^4.57.10",
-    "@refinedev/devtools": "^1.2.16",
-    "@refinedev/inferencer": "^5.1.1",
     "@refinedev/kbar": "^1.3.16",
     "@refinedev/nextjs-router": "^6.2.3",
     "@refinedev/simple-rest": "^5.0.10",
@@ -25,7 +23,9 @@
     "next": "^14.2.26",
     "next-auth": "^4.24.5",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "zod": "^4.0.15",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.2",
@@ -37,5 +37,8 @@
     "eslint": "^8.24.0",
     "rimraf": "3.0.2",
     "typescript": "^5.4.2"
+  },
+  "refine": {
+    "projectId": "BQgU4Q-KFb9hT-gh4UkW"
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@components/header";
+import { Header } from "@/components/header";
 import { ThemedLayoutV2 } from "@refinedev/antd";
 import React from "react";
 
