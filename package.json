@@ -1,5 +1,5 @@
 {
-  "name": "with-nextjs-next-auth",
+  "name": "admin-dashboard",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -14,7 +14,6 @@
     "@refinedev/antd": "^5.46.2",
     "@refinedev/cli": "^2.16.46",
     "@refinedev/core": "^4.57.10",
-    "@refinedev/kbar": "^1.3.16",
     "@refinedev/nextjs-router": "^6.2.3",
     "@refinedev/simple-rest": "^5.0.10",
     "antd": "^5.17.0",
@@ -37,8 +36,5 @@
     "eslint": "^8.24.0",
     "rimraf": "3.0.2",
     "typescript": "^5.4.2"
-  },
-  "refine": {
-    "projectId": "BQgU4Q-KFb9hT-gh4UkW"
   }
 }

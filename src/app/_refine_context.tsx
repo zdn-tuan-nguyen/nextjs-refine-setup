@@ -2,7 +2,6 @@
 
 import { useNotificationProvider } from "@refinedev/antd";
 import { Refine } from "@refinedev/core";
-import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider from "@refinedev/nextjs-router";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
@@ -35,25 +34,23 @@ const App = ({ children, defaultMode }: React.PropsWithChildren<AppProps>) => {
 
   return (
     <>
-      <RefineKbarProvider>
-        <ColorModeContextProvider defaultMode={defaultMode}>
-          <Refine
-            routerProvider={routerProvider}
-            dataProvider={dataProvider}
-            notificationProvider={useNotificationProvider}
-            authProvider={authProvider}
-            resources={refineResources}
-            options={{
-              syncWithLocation: true,
-              warnWhenUnsavedChanges: true,
-              useNewQueryKeys: true,
-            }}
-          >
-            {children}
-            <RefineKbar />
-          </Refine>
-        </ColorModeContextProvider>
-      </RefineKbarProvider>
+      <ColorModeContextProvider defaultMode={defaultMode}>
+        <Refine
+          routerProvider={routerProvider}
+          dataProvider={dataProvider}
+          notificationProvider={useNotificationProvider}
+          authProvider={authProvider}
+          resources={refineResources}
+          options={{
+            syncWithLocation: true,
+            warnWhenUnsavedChanges: true,
+            useNewQueryKeys: true,
+          }}
+        >
+          {children}
+          <RefineKbar />
+        </Refine>
+      </ColorModeContextProvider>
     </>
   );
 };

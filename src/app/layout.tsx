@@ -1,8 +1,9 @@
+import { AntdRegistry } from "@ant-design/nextjs-registry";
+import "antd/dist/reset.css";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import React, { Suspense } from "react";
 import { RefineContext } from "./_refine_context";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Refine",
@@ -22,7 +23,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      <body style={{ padding: 0 }}>
         <Suspense>
           <AntdRegistry>
             <RefineContext defaultMode={theme?.value}>{children}</RefineContext>

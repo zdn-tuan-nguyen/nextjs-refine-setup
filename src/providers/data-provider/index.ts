@@ -12,6 +12,56 @@ type MethodTypesWithBody = "post" | "put" | "patch";
 
 const API_URL = env.API_BASE_URL;
 
+const transformResponseToArray = (
+  response: any
+): { data: any[]; total: number } => {
+  // If response is already an array
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      total: response.length,
+    };
+  }
+
+  // If response has structure: { data: [], message: "", statusCode: 200 }
+  if (response && response.data && Array.isArray(response.data)) {
+    return {
+      data: response.data,
+      total: response.total || response.data.length,
+    };
+  }
+
+  // If response has structure: { items: [], total: number }
+  if (response && response.items && Array.isArray(response.items)) {
+    return {
+      data: response.items,
+      total: response.total || response.items.length,
+    };
+  }
+
+  // If response has structure: { results: [], count: number }
+  if (response && response.results && Array.isArray(response.results)) {
+    return {
+      data: response.results,
+      total: response.count || response.results.length,
+    };
+  }
+
+  // If response is a single object, wrap it in array
+  if (response && typeof response === "object" && !Array.isArray(response)) {
+    return {
+      data: [response],
+      total: 1,
+    };
+  }
+
+  // Fallback: return empty array
+  return {
+    data: [],
+    total: 0,
+  };
+};
+
 export const dataProviderSimpleRest = (
   apiUrl: string = API_URL,
   httpClient: AxiosInstance = axiosInstance
@@ -53,15 +103,20 @@ export const dataProviderSimpleRest = (
       ? `${url}?${stringify(combinedQuery)}`
       : url;
 
-    const { data, headers } = await httpClient[requestMethod](urlWithQuery, {
-      headers: headersFromMeta,
-    });
+    const { data: responseData, headers } = await httpClient[requestMethod](
+      urlWithQuery,
+      {
+        headers: headersFromMeta,
+      }
+    );
 
-    const total = +headers["x-total-count"];
+    const { data, total: transformedTotal } =
+      transformResponseToArray(responseData);
+    const total = +headers["x-total-count"] || transformedTotal;
 
     return {
       data,
-      total: total || data.length,
+      total: total,
     };
   },
 
