@@ -1,6 +1,9 @@
-import { env } from "@/config/env";
 import type { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+import { env } from "@/config/env";
+import { AUTH_PROVIDERS } from "@/constants";
+import { api } from "@/lib/axios";
 
 interface LoginCredentials {
   email: string;
@@ -18,16 +21,20 @@ interface ApiResponse<T> {
 }
 
 interface UserResponse {
-  id: string;
-  name: string;
-  email: string;
-  image?: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+  accessToken: string;
+  refreshToken: string;
 }
 
 const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      id: "credential-login",
+      id: AUTH_PROVIDERS.CREDENTIALS_LOGIN,
       name: "Sign In",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -40,32 +47,20 @@ const authOptions: NextAuthOptions = {
 
         try {
           console.log("Signing in with credentials:", credentials);
-          const response = await fetch(`${env.API_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
+          const response = await api.public.post(
+            `${env.API_BASE_URL}/auth/login`,
+            {
               email: credentials.email,
               password: credentials.password,
-            }),
-          });
-          // console.log("🚀 ~ authorize ~ response:", response);
+            }
+          );
 
-          if (!response.ok) {
-            return null;
-          }
-
-          const result: ApiResponse<UserResponse> = await response.json();
-          console.log("🚀 ~ authorize ~ result:", result);
-
-          // if (!result.success || !result.data) {
-          //   return null;
-          // }
+          const result: ApiResponse<UserResponse> = response.data;
 
           if (!result.data?.user) {
             return null;
           }
+
           const user: User = {
             id: result.data.user.id,
             name: result.data.user.name,
@@ -81,7 +76,7 @@ const authOptions: NextAuthOptions = {
       },
     }),
     CredentialsProvider({
-      id: "CredentialsSignUp",
+      id: AUTH_PROVIDERS.CREDENTIALS_REGISTER,
       name: "Sign Up",
       credentials: {
         name: { label: "Name", type: "text" },
@@ -99,33 +94,27 @@ const authOptions: NextAuthOptions = {
 
         try {
           console.log("Registering user with credentials:", credentials);
-          const response = await fetch(`${env.API_BASE_URL}/auth/register`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
+
+          const response = await api.public.post(
+            `${env.API_BASE_URL}/auth/register`,
+            {
               name: credentials.name,
               email: credentials.email,
               password: credentials.password,
-            }),
-          });
+            }
+          );
 
-          if (!response.ok) {
-            return null;
-          }
+          const result: ApiResponse<UserResponse> = response.data;
 
-          const result: ApiResponse<UserResponse> = await response.json();
-
-          if (!result.success || !result.data) {
+          if (!result.data?.user) {
             return null;
           }
 
           const user: User = {
-            id: result.data.id,
-            name: result.data.name,
-            email: result.data.email,
-            image: result.data.image,
+            id: result.data.user.id,
+            name: result.data.user.name,
+            email: result.data.user.email,
+            image: result.data.user.image,
           };
 
           return user;

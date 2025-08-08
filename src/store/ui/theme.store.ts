@@ -1,12 +1,12 @@
 import Cookies from "js-cookie";
 import { create } from "zustand";
 
-type ThemeState = {
+interface ThemeState {
   mode: "light" | "dark";
   setMode: (mode: "light" | "dark") => void;
   toggleMode: () => void;
   initMode: (defaultMode?: "light" | "dark") => void;
-};
+}
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
   mode: "light",

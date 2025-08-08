@@ -9,5 +9,21 @@ declare module "next-auth" {
       /** The user's postal address. */
       address: string;
     } & DefaultSession["user"];
+    accessToken?: string;
+    refreshToken?: string;
+  }
+
+  interface User {
+    id: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
+    error?: string;
+    id?: string;
   }
 }

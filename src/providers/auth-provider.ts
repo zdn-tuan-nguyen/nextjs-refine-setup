@@ -4,6 +4,8 @@ import { AuthProvider } from "@refinedev/core";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
+import { AUTH_PROVIDERS } from "@/constants";
+
 export const useAuthProvider = () => {
   const { data, status } = useSession();
   const to = usePathname();
@@ -21,7 +23,7 @@ export const useAuthProvider = () => {
         };
       }
 
-      const signInResponse = await signIn("credential-login", {
+      const signInResponse = await signIn(AUTH_PROVIDERS.CREDENTIALS_LOGIN, {
         email,
         password,
         callbackUrl: to ? to.toString() : "/",
